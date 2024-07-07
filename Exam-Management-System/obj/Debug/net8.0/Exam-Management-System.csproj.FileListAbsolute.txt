@@ -12,3 +12,4 @@ C:\CAMPUS\Exam-Management-System\Exam-Management-System\obj\Debug\net8.0\refint\
 C:\CAMPUS\Exam-Management-System\Exam-Management-System\obj\Debug\net8.0\Exam-Management-System.pdb
 C:\CAMPUS\Exam-Management-System\Exam-Management-System\obj\Debug\net8.0\Exam-Management-System.genruntimeconfig.cache
 C:\CAMPUS\Exam-Management-System\Exam-Management-System\obj\Debug\net8.0\ref\Exam-Management-System.dll
+C:\CAMPUS\Exam-Management-System\Exam-Management-System\obj\Debug\net8.0\Exam-Management-System.sourcelink.json
