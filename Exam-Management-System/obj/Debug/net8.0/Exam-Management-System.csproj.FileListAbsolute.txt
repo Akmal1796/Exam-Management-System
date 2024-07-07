@@ -1,0 +1,14 @@
+C:\CAMPUS\Exam-Management-System\Exam-Management-System\bin\Debug\net8.0\Exam-Management-System.exe
+C:\CAMPUS\Exam-Management-System\Exam-Management-System\bin\Debug\net8.0\Exam-Management-System.deps.json
+C:\CAMPUS\Exam-Management-System\Exam-Management-System\bin\Debug\net8.0\Exam-Management-System.runtimeconfig.json
+C:\CAMPUS\Exam-Management-System\Exam-Management-System\bin\Debug\net8.0\Exam-Management-System.dll
+C:\CAMPUS\Exam-Management-System\Exam-Management-System\bin\Debug\net8.0\Exam-Management-System.pdb
+C:\CAMPUS\Exam-Management-System\Exam-Management-System\obj\Debug\net8.0\Exam-Management-System.GeneratedMSBuildEditorConfig.editorconfig
+C:\CAMPUS\Exam-Management-System\Exam-Management-System\obj\Debug\net8.0\Exam-Management-System.AssemblyInfoInputs.cache
+C:\CAMPUS\Exam-Management-System\Exam-Management-System\obj\Debug\net8.0\Exam-Management-System.AssemblyInfo.cs
+C:\CAMPUS\Exam-Management-System\Exam-Management-System\obj\Debug\net8.0\Exam-Management-System.csproj.CoreCompileInputs.cache
+C:\CAMPUS\Exam-Management-System\Exam-Management-System\obj\Debug\net8.0\Exam-Management-System.dll
+C:\CAMPUS\Exam-Management-System\Exam-Management-System\obj\Debug\net8.0\refint\Exam-Management-System.dll
+C:\CAMPUS\Exam-Management-System\Exam-Management-System\obj\Debug\net8.0\Exam-Management-System.pdb
+C:\CAMPUS\Exam-Management-System\Exam-Management-System\obj\Debug\net8.0\Exam-Management-System.genruntimeconfig.cache
+C:\CAMPUS\Exam-Management-System\Exam-Management-System\obj\Debug\net8.0\ref\Exam-Management-System.dll
