@@ -2,206 +2,205 @@
 using System;
 using System.Collections.Generic;
 
-string connectionString = "Server=localhost;Database=ExamManagement;User ID=root;Password='';";
-
-while (true)
+class Program
 {
-    Console.WriteLine("Choose an option:");
-    Console.WriteLine("1. Check GPA Results");
-    Console.WriteLine("2. Enter Module Grades and Calculate GPA");
-    Console.WriteLine("3. Exit");
+    static string connectionString = "Server=localhost;Database=ExamManagement;Uid=root;Pwd='';";
 
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-    string choice = Console.ReadLine();
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
-
-    switch (choice)
+    static void Main(string[] args)
     {
-        case "1":
-            CheckGPAResults();
-            break;
-        case "2":
-            EnterModuleGradesAndCalculateGPA();
-            break;
-        case "3":
-            return;
-        default:
-            Console.WriteLine("Invalid choice. Please try again.");
-            break;
-    }
-}
-
-void CheckGPAResults()
-{
-    using (var connection = new MySqlConnection(connectionString))
-    {
-        connection.Open();
-
-        // Retrieve students' GPA results
-        var students = GetStudents(connection);
-
-        foreach (var student in students)
+        while (true)
         {
+            Console.WriteLine("Choose an option:");
+            Console.WriteLine("1. Check GPA Results");
+            Console.WriteLine("2. Enter Module Grades and Calculate GPA");
+            Console.WriteLine("3. Exit");
+
+            string choice = Console.ReadLine();
+
+            switch (choice)
+            {
+                case "1":
+                    CheckGPAResults();
+                    break;
+                case "2":
+                    EnterModuleGradesAndCalculateGPA();
+                    break;
+                case "3":
+                    return;
+                default:
+                    Console.WriteLine("Invalid choice. Please try again.");
+                    break;
+            }
+        }
+    }
+
+    static void CheckGPAResults()
+    {
+        using (var connection = new MySqlConnection(connectionString))
+        {
+            connection.Open();
+
+            Console.WriteLine("Enter Student ID to check GPA:");
+            int studentID = Convert.ToInt32(Console.ReadLine());
+
+            if (!StudentExists(connection, studentID))
+            {
+                Console.WriteLine("Student ID does not exist.");
+                return;
+            }
+
             var query = "SELECT * FROM GPA WHERE StudentID = @StudentID";
             using (var command = new MySqlCommand(query, connection))
             {
-                command.Parameters.AddWithValue("@StudentID", student.StudentID);
+                command.Parameters.AddWithValue("@StudentID", studentID);
 
                 using (var reader = command.ExecuteReader())
                 {
-                    while (reader.Read())
+                    if (reader.HasRows)
                     {
-                        Console.WriteLine($"Student ID: {reader["StudentID"]}, Name: {reader["Name"]}, Degree: {reader["Degree"]}, Semester GPA: {reader["SemesterGPA"]}, Overall GPA: {reader["OverallGPA"]}");
+                        while (reader.Read())
+                        {
+                            Console.WriteLine($"Student ID: {reader["StudentID"]}, Name: {reader["Name"]}, Degree: {reader["Degree"]}, Semester GPA: {reader["SemesterGPA"]}, Overall GPA: {reader["OverallGPA"]}");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("No GPA records found for this student.");
                     }
                 }
             }
         }
     }
-}
 
-void EnterModuleGradesAndCalculateGPA()
-{
-    using (var connection = new MySqlConnection(connectionString))
+    static void EnterModuleGradesAndCalculateGPA()
     {
-        connection.Open();
-
-        Console.WriteLine("Enter Student ID:");
-        int studentID = Convert.ToInt32(Console.ReadLine());
-
-        // Retrieve modules taken by the student
-        var modules = GetModulesByStudent(connection, studentID);
-
-        // Calculate semester GPA
-        float semesterGPA = CalculateSemesterGPA(modules);
-
-        // Calculate overall GPA
-        float overallGPA = CalculateOverallGPA(connection, studentID);
-
-        // Update GPA table
-        UpdateGPA(connection, studentID, semesterGPA, overallGPA);
-
-        Console.WriteLine($"Updated GPA for Student ID {studentID}: Semester GPA = {semesterGPA}, Overall GPA = {overallGPA}");
-    }
-}
-
-List<Student> GetStudents(MySqlConnection connection)
-{
-    var students = new List<Student>();
-
-    var query = "SELECT StudentID, Name, Degree FROM Students";
-    using (var command = new MySqlCommand(query, connection))
-    {
-        using var reader = command.ExecuteReader();
-        while (reader.Read())
+        using (var connection = new MySqlConnection(connectionString))
         {
-#pragma warning disable CS8601 // Possible null reference assignment.
-            var student = new Student
+            connection.Open();
+
+            Console.WriteLine("Enter Student ID:");
+            int studentID = Convert.ToInt32(Console.ReadLine());
+
+            if (!StudentExists(connection, studentID))
             {
-                StudentID = Convert.ToInt32(reader["StudentID"]),
-                Name = Convert.ToString(reader["Name"]),
-                Degree = Convert.ToString(reader["Degree"])
-            };
-#pragma warning restore CS8601 // Possible null reference assignment.
-            students.Add(student);
+                Console.WriteLine("Student ID does not exist.");
+                return;
+            }
+
+            // Retrieve modules taken by the student
+            var modules = GetModulesByStudent(connection, studentID);
+
+            // Calculate semester GPA
+            float semesterGPA = CalculateSemesterGPA(modules);
+
+            // Calculate overall GPA
+            float overallGPA = CalculateOverallGPA(connection, studentID);
+
+            // Update GPA table
+            UpdateGPA(connection, studentID, semesterGPA, overallGPA);
+
+            Console.WriteLine($"Updated GPA for Student ID {studentID}: Semester GPA = {semesterGPA}, Overall GPA = {overallGPA}");
         }
     }
 
-    return students;
-}
-
-List<Module> GetModulesByStudent(MySqlConnection connection, int studentID)
-{
-    var modules = new List<Module>();
-
-    var query = "SELECT ModuleName, Credits FROM Modules WHERE StudentID = @StudentID";
-    using (var command = new MySqlCommand(query, connection))
+    static bool StudentExists(MySqlConnection connection, int studentID)
     {
-        command.Parameters.AddWithValue("@StudentID", studentID);
-
-        using (var reader = command.ExecuteReader())
+        var query = "SELECT COUNT(*) FROM Students WHERE StudentID = @StudentID";
+        using (var command = new MySqlCommand(query, connection))
         {
-            while (reader.Read())
+            command.Parameters.AddWithValue("@StudentID", studentID);
+            return Convert.ToInt32(command.ExecuteScalar()) > 0;
+        }
+    }
+
+    static List<Module> GetModulesByStudent(MySqlConnection connection, int studentID)
+    {
+        var modules = new List<Module>();
+
+        var query = "SELECT ModuleName, Credits, Grade FROM Modules WHERE StudentID = @StudentID";
+        using (var command = new MySqlCommand(query, connection))
+        {
+            command.Parameters.AddWithValue("@StudentID", studentID);
+
+            using (var reader = command.ExecuteReader())
             {
-#pragma warning disable CS8601 // Possible null reference assignment.
-                var module = new Module
+                while (reader.Read())
                 {
-                    ModuleName = Convert.ToString(reader["ModuleName"]),
-                    Credits = Convert.ToInt32(reader["Credits"]),
-                    Grade = Convert.ToDouble(reader["Grade"]) // Assuming Grade is stored as double in Modules table
-                };
-#pragma warning restore CS8601 // Possible null reference assignment.
-                modules.Add(module);
+                    var module = new Module
+                    {
+                        ModuleName = Convert.ToString(reader["ModuleName"]),
+                        Credits = Convert.ToInt32(reader["Credits"]),
+                        Grade = Convert.ToDouble(reader["Grade"]) // Ensure Grade is retrieved correctly
+                    };
+                    modules.Add(module);
+                }
             }
         }
+
+        return modules;
     }
 
-    return modules;
-}
-
-float CalculateSemesterGPA(List<Module> modules)
-{
-    if (modules.Count == 0)
-        return 0.0f;
-
-    float totalCredits = 0;
-    float totalGradePoints = 0;
-
-    foreach (var module in modules)
+    static float CalculateSemesterGPA(List<Module> modules)
     {
-        totalCredits += module.Credits;
-        totalGradePoints += (float)module.Grade * module.Credits; // Explicitly cast module.Grade to float
-    }
+        if (modules.Count == 0)
+            return 0.0f;
 
-    return totalGradePoints / totalCredits;
-}
+        float totalCredits = 0;
+        float totalGradePoints = 0;
 
-
-float CalculateOverallGPA(MySqlConnection connection, int studentID)
-{
-    float overallGPA = 0;
-    int semesterCount = 0;
-
-    var query = "SELECT SemesterGPA FROM GPA WHERE StudentID = @StudentID";
-    using (var command = new MySqlCommand(query, connection))
-    {
-        command.Parameters.AddWithValue("@StudentID", studentID);
-
-        using var reader = command.ExecuteReader();
-        while (reader.Read())
+        foreach (var module in modules)
         {
-            overallGPA += Convert.ToSingle(reader["SemesterGPA"]);
-            semesterCount++;
+            totalCredits += module.Credits;
+            totalGradePoints += (float)module.Grade * module.Credits; // Explicitly cast module.Grade to float
+        }
+
+        return totalGradePoints / totalCredits;
+    }
+
+    static float CalculateOverallGPA(MySqlConnection connection, int studentID)
+    {
+        float overallGPA = 0;
+        int semesterCount = 0;
+
+        var query = "SELECT SemesterGPA FROM GPA WHERE StudentID = @StudentID";
+        using (var command = new MySqlCommand(query, connection))
+        {
+            command.Parameters.AddWithValue("@StudentID", studentID);
+
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    overallGPA += Convert.ToSingle(reader["SemesterGPA"]);
+                    semesterCount++;
+                }
+            }
+        }
+
+        if (semesterCount > 0)
+            return overallGPA / semesterCount;
+        else
+            return 0.0f;
+    }
+
+    static void UpdateGPA(MySqlConnection connection, int studentID, float semesterGPA, float overallGPA)
+    {
+        var query = "INSERT INTO GPA (StudentID, Name, Degree, SemesterGPA, OverallGPA) " +
+                    "VALUES (@StudentID, (SELECT Name FROM Students WHERE StudentID = @StudentID), " +
+                    "(SELECT Degree FROM Students WHERE StudentID = @StudentID), @SemesterGPA, @OverallGPA)";
+        using (var command = new MySqlCommand(query, connection))
+        {
+            command.Parameters.AddWithValue("@StudentID", studentID);
+            command.Parameters.AddWithValue("@SemesterGPA", semesterGPA);
+            command.Parameters.AddWithValue("@OverallGPA", overallGPA);
+            command.ExecuteNonQuery();
         }
     }
-
-    if (semesterCount > 0)
-        return overallGPA / semesterCount;
-    else
-        return 0.0f;
-}
-
-void UpdateGPA(MySqlConnection connection, int studentID, float semesterGPA, float overallGPA)
-{
-    var query = "INSERT INTO GPA (StudentID, SemesterGPA, OverallGPA) VALUES (@StudentID, @SemesterGPA, @OverallGPA)";
-    using (var command = new MySqlCommand(query, connection))
-    {
-        command.Parameters.AddWithValue("@StudentID", studentID);
-        command.Parameters.AddWithValue("@SemesterGPA", semesterGPA);
-        command.Parameters.AddWithValue("@OverallGPA", overallGPA);
-        command.ExecuteNonQuery();
-    }
-}
-
-class Student
-{
-    public int StudentID { get; set; }
-    public required string Name { get; set; }
-    public required string Degree { get; set; }
 }
 
 class Module
 {
-    public required string ModuleName { get; set; }
+    public string ModuleName { get; set; }
     public int Credits { get; set; }
     public double Grade { get; set; }
 }
